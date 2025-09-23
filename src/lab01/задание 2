@@ -1,0 +1,5 @@
+a=(input('Число a: ')).replace(',','.')
+b=(input('Число b: ')).replace(',','.')
+sum=round((float(a)+float(b)),2)
+avg=round((float(a)+float(b))/2,2)
+print(f'Сумма = {sum} ; Среднее арифметическое = {avg}')

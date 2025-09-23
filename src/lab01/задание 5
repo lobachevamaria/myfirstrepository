@@ -1,0 +1,9 @@
+fio=input('ФИО: ')
+inic=''
+dl=0
+x=fio.split()
+for i in range(0,len(x)):
+    inic=inic+x[i][0]+'.'
+    dl=len(x[i])+dl
+print(f'Инициалы: {inic[:-1]}')
+print(f'Длина (символов): {dl+2}')
