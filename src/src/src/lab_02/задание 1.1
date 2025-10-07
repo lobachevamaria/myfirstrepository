@@ -1,0 +1,12 @@
+def min_max(nums:list[float|int])->tuple[float|int, float| int]:
+    if len(nums)==0:
+         return ValueError
+    mi=100000000000000000
+    ma=-100000000000000000
+    for i in range(0,len(nums)):
+        if nums[i]<mi:
+            mi=nums[i]
+        if nums[i]>ma:
+            ma=nums[i]
+    return tuple([mi, ma])
+print(min_max([1.5, 2, 2.0, -3.1]))

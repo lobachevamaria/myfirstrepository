@@ -1,0 +1,9 @@
+def flatten(mat:list[list| tuple])->list:
+    array=list()
+    for arr in mat:
+        if not(isinstance(arr,tuple) or isinstance(arr,list)):
+            return TypeError
+        for member in arr:
+            array.append(member)
+    return array
+print(flatten([[1,2],[3,4]]))
