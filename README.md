@@ -165,4 +165,4 @@ def format_record(rec:tuple[str,str,float]):
 print(format_record(("Петров Пётр Петрович", "IKBO-12", 5.0)))
 
 ```
-![Картинка 1](images/lab02/задание С.png)
+![Картинка 7](images/lab02/задание С.png)
