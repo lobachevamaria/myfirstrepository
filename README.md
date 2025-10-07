@@ -72,7 +72,7 @@ def min_max(nums:list[float|int])->tuple[float|int, float| int]:
     return tuple([mi, ma])
 print(min_max([1.5, 2, 2.0, -3.1]))
 ```
-![Картинка 1](images/lab02/задание 1.1.png)
+![Картинка 1](images/lab02/1.1.png)
 
 ### Задание 1.2
 ```python
@@ -80,7 +80,7 @@ def unique_sorted(nums:list[float|int])->list[float|int]:
     return sorted(set(nums))
 print(unique_sorted([3,1,2,1,3]))
 ```
-![Картинка 2](images/lab02/задание 1.2 .png)
+![Картинка 2](images/lab02/1.2 .png)
 
 ### Задание 1.3
 ```python
@@ -94,7 +94,7 @@ def flatten(mat:list[list| tuple])->list:
     return array
 print(flatten([[1,2],[3,4]]))
 ```
-![Картинка 3](images/lab02/задание 1.3 .png)
+![Картинка 3](images/lab02/1.3 .png)
 
 ### Задание B.1
 ```python
@@ -110,7 +110,7 @@ def transpose(mat:list[list[float|int]])->list[list]:
     return new
 print(transpose([[1,2],[3,4]]))
 ```
-![Картинка 4](images/lab02/задание В.1 .png)
+![Картинка 4](images/lab02/B.1 .png)
 
 ### Задание B.2
 ```python
@@ -123,7 +123,7 @@ def row_sums(mat:list[list[float|int]])->list[float]:
     return array
 print(row_sums([[1,2,3], [4,5,6]]))
 ```
-![Картинка 5](images/lab02/задание В.2 .png)
+![Картинка 5](images/lab02/B.2 .png)
 
 ### Задание B.3
 ```python
@@ -137,7 +137,7 @@ ef col_sums(mat:list[list[float|int]])->list[float]:
     return array
 print(col_sums([[1,2,3],[4,5,6]]))
 ```
-![Картинка 6](images/lab02/задание В.3 .png)
+![Картинка 6](images/lab02/B.3 .png)
 
 ### Задание C
 ```python
@@ -165,4 +165,4 @@ def format_record(rec:tuple[str,str,float]):
 print(format_record(("Петров Пётр Петрович", "IKBO-12", 5.0)))
 
 ```
-![Картинка 7](images/lab02/задание С.png)
+![Картинка 7](images/lab02/C.png)
