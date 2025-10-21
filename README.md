@@ -166,3 +166,79 @@ print(format_record(("Петров Пётр Петрович", "IKBO-12", 5.0)))
 
 ```
 ![Картинка 7](images/lab02/C.png)
+## Лабораторная работа 3
+
+### Задание А
+```python
+import re
+
+def normalize(text: str, *, casefold: bool = True, yo2e: bool = True) -> str:
+    if casefold:
+        text = text.casefold()
+    if yo2e:
+        text = text.replace('Ё', 'Е').replace('ё', 'е')
+    text = ' '.join(text.strip().split())
+    return text
+print(normalize("Hello\r\nWorld"))
+print(normalize("ёжик, Ёлка"))
+print(normalize("Hello\r\nWorld"))
+print(normalize("  двойные   пробелы  "))
+
+def tokenize(text: str) -> list[str]:
+    pattern = r'\w+(?:-\w+)*'
+    tokens = re.findall(pattern, text)
+    return tokens
+print(tokenize("привет мир"))
+print(tokenize("hello,world!!!"))
+print(tokenize("по-настоящему круто"))
+print(tokenize("2025 год"))
+print(tokenize("emoji 😀 не слово"))
+def count_freq(tokens: list[str]) -> dict[str, int]:
+    freq = {}
+    for token in tokens:
+        freq[token] = freq.get(token, 0) + 1
+    return freq
+
+def top_n(freq: dict[str, int], n: int = 5) -> list[tuple[str, int]]:
+    sorted_items = sorted(
+        freq.items(),
+        key=lambda x: (-x[1], x[0])
+    )
+    return sorted_items[:n]
+print(top_n(count_freq(["a","b","a","c","b","a"]),n=2))
+print(top_n(count_freq(["bb","aa","bb","aa","cc"]),n=2))
+```
+![Картинка 1](images/lab03/a.png)
+
+### Задание В
+```
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from lib.text import normalize, tokenize, count_freq, top_n
+
+# Чтение всего ввода из stdin
+text = sys.stdin.readline()
+
+# Нормализация текста
+normalized_text = normalize(text)
+
+# Токенизация
+tokens = tokenize(normalized_text)
+
+# Подсчет статистики
+total_words = len(tokens)
+freq_dict = count_freq(tokens)
+unique_words = len(freq_dict)
+top_words = top_n(freq_dict, 5)
+
+# Вывод результатов
+print(f"Всего слов: {total_words}")
+print(f"Уникальных слов: {unique_words}")
+print("Топ-5:")
+
+for word, count in top_words:
+    print(f"{word}:{count}")
+```
+![Картинка 2](images/lab03/b.png)
