@@ -23,14 +23,19 @@ def top_n(freq: dict[str, int], n: int = 5) -> list[tuple[str, int]]:
         key=lambda x: (-x[1], x[0])
     )
     return sorted_items[:n]
-print(normalize("Hello\r\nWorld"))
-print(normalize("ёжик, Ёлка"))
-print(normalize("Hello\r\nWorld"))
-print(normalize("  двойные   пробелы  "))
-print(tokenize("привет мир"))
-print(tokenize("hello,world!!!"))
-print(tokenize("по-настоящему круто"))
-print(tokenize("2025 год"))
-print(tokenize("emoji 😀 не слово"))
-print(top_n(count_freq(["a","b","a","c","b","a"]),n=2))
-print(top_n(count_freq(["bb","aa","bb","aa","cc"]),n=2))
+def summary(text):
+    normalized_text = normalize(text)
+
+    tokens = tokenize(normalized_text)
+
+    total_words = len(tokens)
+    freq_sorted = count_freq(tokens)
+    unique_words = len(freq_sorted)
+    top = top_n(freq_sorted, 5)
+
+    print(f"Всего слов: {total_words}")
+    print(f"Уникальных слов: {unique_words}")
+    print("Топ-5:")
+
+    for word, count in top:
+        print(f"{word}:{count}")

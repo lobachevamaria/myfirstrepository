@@ -1,3 +1,0 @@
-ime=input('Имя: ')
-vozrast=int(input('Возраст: '))
-print(f'Привет, {ime}! Через год тебе будет {vozrast+1}.')
