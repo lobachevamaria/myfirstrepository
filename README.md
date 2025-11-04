@@ -380,7 +380,7 @@ def json_to_csv(json_path: str, csv_path: str) -> None:
             writer.writerows(dano)
 json_to_csv("data/samples/test.json","data/out/test_from_json.csv")
 ```
-![Картинка 2](images/lab05/test_from_csv_to_json.png)
+![Картинка 2](images/lab05/test_from_json_to_csv.png)
 ### csv_xlsx
 ```python
 import csv
