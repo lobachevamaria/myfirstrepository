@@ -315,3 +315,123 @@ if __name__ == "__main__":
     main()
 ```
 ![Картинка 1](images/lab04/1.png)
+## Лабораторная работа 5
+
+### csv_json
+```python
+import json
+import csv
+from pathlib import Path
+
+
+def csv_to_json(csv_path: str, json_path: str) -> None:
+    file_csv=Path(csv_path)
+
+    if not file_csv.exists():
+        return FileNotFoundError("Файл не найден")
+
+    if file_csv.suffix != ".csv":
+        return ValueError("Неверный тип данных")
+
+    with open(file_csv, "r", encoding='utf-8') as f:
+        reader=csv.DictReader(f)
+
+        if reader.fieldnames is None:
+            return ValueError("Отсутствуют заголовки в файле")
+        dano=list(reader)
+    if len(dano)==0:
+        return ValueError("Пустой файл")
+
+    with open(json_path, "w", encoding='utf-8') as f:
+        json.dump(dano, f, ensure_ascii=False, indent=2)
+csv_to_json("data/samples/test.csv","data/out/test_from_csv.json.json")
+```
+![Картинка 1](images/lab05/test_from_csv_to_json.png)
+### json_csv
+```python
+import json
+import csv
+from pathlib import Path
+
+def json_to_csv(json_path: str, csv_path: str) -> None:
+    file_json=Path(json_path)
+
+    if not file_json.exists():
+        return FileNotFoundError("файл не найден")
+
+    try:
+        with file_json.open('r',encoding='utf-8') as f:
+            dano=json.load(f)
+    except json.JSONDecodeError:
+        return ValueError("неподдерживаемая структура")
+
+    except not isinstance(dano,list):
+        return ValueError("JSON должен быть быть в виде списка объектов")
+
+    except len(dano)==0:
+        return ValueError("JSON файл пуст")
+
+    except not all(isinstance(item, dict) for item in dano):
+        return ValueError("Каждый элемент JSON должны быть словарями")
+
+    with open(csv_path, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=tuple(dano[0].keys()))
+            writer.writeheader()
+            writer.writerows(dano)
+json_to_csv("data/samples/test.json","data/out/test_from_json.csv")
+```
+![Картинка 2](images/lab05/test_from json_to_csv.png)
+### csv_xlsx
+```python
+import csv
+from pathlib import Path
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+
+def csv_to_xlsx(csv_path: str, xlsx_path: str) -> None:
+    csv_file=Path(csv_path)
+    if not csv_file.exists():
+        return FileNotFoundError("Файл не найден")
+    if csv_file.suffix != '.csv':
+        return ValueError("Неверный тип файла")
+    wb=Workbook()
+    ws=wb.active
+    ws.title="Sheet1"
+
+    with open(csv_path, 'r', encoding='utf-8') as f:
+        reader= csv.DictReader(f)
+        rows = list(reader)
+    if len(rows)==0:
+        return ValueError("Файл не содержит данных")
+    if not reader.fieldnames:
+        return ValueError("Файл не содержит заголовка")
+
+    ws.append(reader.fieldnames)
+
+    r_count=0
+    for row in rows:
+        r_count+=1
+
+        data_for_ex=[]
+        for title in reader.fieldnames:
+            data_for_ex.append(row[title])
+        ws.append(data_for_ex)
+    if r_count == 0:
+        return ValueError("Нет данных")
+
+
+    for col_index in range(1,len(reader.fieldnames)+1):
+        column_letter=get_column_letter(col_index)
+        max_len=0
+        for row in ws[column_letter]:
+            if row.value is not None:
+                max_len=max(max_len,len(str(row.value)))
+
+        m_width=max(max_len+2, 8)
+        ws.column_dimensions[column_letter].width =m_width
+    xlsx_path = Path(xlsx_path)
+    wb.save(xlsx_path)
+
+csv_to_xlsx("data/samples/people.csv","data/out/people.xlsx")
+```
+![Картинка 3](images/lab05/xlsx.png)
