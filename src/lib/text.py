@@ -1,41 +1,56 @@
 import re
-
 def normalize(text: str, *, casefold: bool = True, yo2e: bool = True) -> str:
-    if casefold:
-        text = text.casefold()
-    if yo2e:
-        text = text.replace('Ё', 'Е').replace('ё', 'е')
-    text = ' '.join(text.strip().split())
+
+    if casefold==True:
+        text=text.casefold()
+        #привожу к нижнему регистру
+
+    if yo2e==True:
+        text=text.replace('ё','е').replace('Ё','Е')
+        #заменяю ё/Ё
+
+    text=text.replace('\n',' ').replace('\t',' ').replace('\r',' ')
+    #заменяю управляющие символы
+
+    text=text.split() #разбиваю по пробелу (получу список слов)
+
+    text=' '.join(text) #соединяю эдементы в списке(слова) через пробел
+
     return text
+
+
+
+
+
 def tokenize(text: str) -> list[str]:
-    pattern = r'\w+(?:-\w+)*'
-    tokens = re.findall(pattern, text)
+
+    pattern= r'\w+(?:-\w+)*'
+
+    tokens=re.findall(pattern,text)
+
     return tokens
+
+
 def count_freq(tokens: list[str]) -> dict[str, int]:
-    freq = {}
-    for token in tokens:
-        freq[token] = freq.get(token, 0) + 1
-    return freq
+
+    word_count={}
+
+    for word in tokens:
+        word_count[word]=word_count.get(word,0)+1 #если слово есть в словаре, то get возвращает его количество, если нет, то 0
+
+    return word_count
+
+
+
 
 def top_n(freq: dict[str, int], n: int = 5) -> list[tuple[str, int]]:
-    sorted_items = sorted(
-        freq.items(),
-        key=lambda x: (-x[1], x[0])
-    )
-    return sorted_items[:n]
-def summary(text):
-    normalized_text = normalize(text)
 
-    tokens = tokenize(normalized_text)
+    sorted_word=sorted(freq.items(), key=lambda x: (x[0])) #сортирую по алфавиту
+    sorted_word=sorted(freq.items(), key=lambda x: (x[1]),reverse=1) #сортирую количеству в обратном порядке
 
-    total_words = len(tokens)
-    freq_sorted = count_freq(tokens)
-    unique_words = len(freq_sorted)
-    top = top_n(freq_sorted, 5)
 
-    print(f"Всего слов: {total_words}")
-    print(f"Уникальных слов: {unique_words}")
-    print("Топ-5:")
+    return sorted_word[:n]
 
-    for word, count in top:
-        print(f"{word}:{count}")
+tokens=["bb","aa","bb","aa","cc"]
+
+freq_dict = count_freq(tokens)
