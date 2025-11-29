@@ -681,3 +681,353 @@ def test_missing_file(tmp_path: Path):
 ### black
 
 ![Картинка 3](images/lab07/black.png)
+
+## Лабораторная работа 8
+
+### models.py
+```python
+from datetime import datetime, date
+from dataclasses import dataclass
+@dataclass
+class Student:
+    fio: str
+    birthdate: str
+    group: str
+    gpa: float
+
+    def __post_init__(self):
+        #  Валидация birthdate
+        try:
+            datetime.strptime(self.birthdate, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError(f"Неверный формат даты: {self.birthdate}. Ожидается YYYY-MM-DD")
+
+        #  Валидация GPA
+        if not (0 <= self.gpa <= 5):
+            raise ValueError(f"GPA должен быть в диапазоне 0..5, получено: {self.gpa}")
+
+    # Возраст студента
+    def age(self) -> int:
+        birth = datetime.strptime(self.birthdate, "%Y-%m-%d").date()
+        today = date.today()
+        years = today.year - birth.year
+        if (today.month, today.day) < (birth.month, birth.day):
+            years -= 1
+        return years
+    # Сериализация
+    def to_dict(self) -> dict:
+        return {
+            "fio": self.fio,
+            "birthdate": self.birthdate,
+            "group": self.group,
+            "gpa": self.gpa
+        }
+
+
+    # Десериализация
+
+    @classmethod
+    def from_dict(cls, d: dict):
+        return cls(
+            fio=d["fio"],
+            birthdate=d["birthdate"],
+            group=d["group"],
+            gpa=d["gpa"]
+        )
+
+    def __str__(self):
+        return f"{self.fio} ({self.group}), возраст: {self.age()}, GPA: {self.gpa}"
+
+
+```
+### serialize.py
+```python
+import json
+from .models import Student
+def students_to_json(students, path):
+    "Сохранение списка студентов в JSON файл."
+    data = [s.to_dict() for s in students]
+
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+def students_from_json(path) -> list[Student]:
+    "Загрузка студентов из JSON файла."
+    with open(path, "r", encoding="utf-8") as f:
+        raw = json.load(f)
+
+    result = []
+    for d in raw:
+        result.append(Student.from_dict(d))
+
+    return result
+```
+![Картинка 1](images/lab08/image.png)
+![Картинка 2](images/lab08/students_output.png)
+## Лабораторная работа 9
+### group.py
+```python
+import csv
+from pathlib import Path
+from src.lab08.models import Student
+
+class Group:
+    def __init__(self, storage_path: str):
+        self.path = Path(storage_path)
+        self._ensure_storage_exists()
+
+    def _ensure_storage_exists(self):
+        "Создаёт CSV-файл с заголовком, если его нет."
+        if not self.path.exists():
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            with self.path.open("w", encoding="utf-8", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow(["fio", "birthdate", "group", "gpa"])
+
+    def _read_all(self):
+        "Читает все строки CSV как список словарей."
+        rows = []
+        with self.path.open("r", encoding="utf-8", newline="") as f:
+            reader = csv.DictReader(f)
+            if reader.fieldnames != ["fio", "birthdate", "group", "gpa"]:
+                raise ValueError("Неверный заголовок CSV-файла")
+            for row in reader:
+                if not any(row.values()):
+                    continue
+                rows.append(row)
+        return rows
+
+    def _write_all(self, rows):
+        "Перезаписывает CSV полностью."
+        with self.path.open("w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=["fio", "birthdate", "group", "gpa"])
+            writer.writeheader()
+            for r in rows:
+                writer.writerow(r)
+    def list(self):
+        "Возвращает список Student."
+        rows = self._read_all()
+        students = []
+        for r in rows:
+            r2 = {
+                "fio": r["fio"],
+                "birthdate": r["birthdate"],
+                "group": r["group"],
+                "gpa": float(r["gpa"])
+            }
+            students.append(Student.from_dict(r2))
+        return students
+
+    def add(self, student: Student):
+        "Добавить студента в CSV."
+        rows = self._read_all()
+        row = student.to_dict()
+        row["gpa"] = str(row["gpa"])
+        rows.append(row)
+        self._write_all(rows)
+
+    def find(self, substr: str):
+        "Поиск по подстроке в ФИО (без учета регистра)."
+        rows = self._read_all()
+        substr = substr.lower()
+        found = []
+        for r in rows:
+            if substr in r["fio"].lower():
+                r2 = {
+                    "fio": r["fio"],
+                    "birthdate": r["birthdate"],
+                    "group": r["group"],
+                    "gpa": float(r["gpa"])
+                }
+                found.append(Student.from_dict(r2))
+        return found
+
+    def remove(self, fio: str):
+        "Удаляет запись по точному ФИО. Возвращает количество удалённых."
+        rows = self._read_all()
+        new_rows = [r for r in rows if r["fio"] != fio]
+        removed = len(rows) - len(new_rows)
+
+        if removed:
+            self._write_all(new_rows)
+
+        return removed
+    def update(self, fio: str, **fields):
+
+        rows = self._read_all()
+
+        for r in rows:
+            if r["fio"] == fio:
+                r.update({k: str(v) for k, v in fields.items()})
+
+        self._write_all(rows)
+
+```
+![Картинка 1](images/lab09/group.png)
+![Картинка 2](images/lab09/students_csv.png)
+## Лабораторная работа 10
+### structures.py
+```python
+from collections import deque
+
+
+class Stack:
+    "Класс стека (LIFO) на основе списка"
+
+    def __init__(self):
+        self._data = []  # внутренняя структура
+
+    def push(self, item):
+        "Добавить элемент в стек"
+        self._data.append(item)
+
+    def pop(self):
+        "Снять элемент с вершины стека"
+        if self.is_empty():
+            raise IndexError("pop from empty stack")
+        return self._data.pop()
+
+    def peek(self):
+        "Посмотреть верхний элемент без удаления"
+        if self.is_empty():
+            return None
+        return self._data[-1]
+
+    def is_empty(self) -> bool:
+        "True если стек пуст"
+        return len(self._data) == 0
+
+    def __len__(self):
+        return len(self._data)
+
+    def __repr__(self):
+        return f"Stack({self._data})"
+
+
+class Queue:
+    "Класс очереди (FIFO) на основе deque"
+
+    def __init__(self):
+        self._data = deque()
+
+    def enqueue(self, item):
+        "Добавить в конец очереди"
+        self._data.append(item)
+
+    def dequeue(self):
+        "Удалить первый элемент очереди"
+        if self.is_empty():
+            raise IndexError("dequeue from empty queue")
+        return self._data.popleft()
+
+    def peek(self):
+        "Посмотреть первый элемент без удаления"
+        if self.is_empty():
+            return None
+        return self._data[0]
+
+    def is_empty(self) -> bool:
+        return len(self._data) == 0
+
+    def __len__(self):
+        return len(self._data)
+
+    def __repr__(self):
+        return f"Queue({list(self._data)})"
+```
+### linked_list.py
+```python
+class Node:
+    "Узел односвязного списка"
+
+    def __init__(self, value, next=None):
+        self.value = value
+        self.next = next
+
+    def __repr__(self):
+        return f"Node({self.value})"
+
+
+class SinglyLinkedList:
+    "Односвязный список"
+
+    def __init__(self):
+        self.head = None
+        self._size = 0
+
+    def append(self, value):
+        "Вставить в конец"
+        new_node = Node(value)
+
+        if self.head is None:
+            self.head = self.tail = new_node
+        else:
+            self.tail.next = new_node
+            self.tail = new_node
+
+        self._size += 1
+
+    def prepend(self, value):
+        "Вставить в начало"
+        new_node = Node(value, self.head)
+        self.head = new_node
+        if self._size == 0:
+            self.tail = new_node
+        self._size += 1
+
+    def insert(self, idx: int, value):
+        "Вставка по индексу"
+        if idx < 0 or idx > self._size:
+            raise IndexError("index out of range")
+
+        if idx == 0:
+            self.prepend(value)
+            return
+
+        if idx == self._size:
+            self.append(value)
+            return
+
+        current = self.head
+        for _ in range(idx - 1):
+            current = current.next
+
+        new_node = Node(value, current.next)
+        current.next = new_node
+        self._size += 1
+
+    def remove_at(self, idx: int):
+        "Удаление по индексу"
+        if idx < 0 or idx >= self._size:
+            raise IndexError("index out of range")
+
+        if idx == 0:
+            self.head = self.head.next
+            if self._size == 1:
+                self.tail = None
+            self._size -= 1
+            return
+
+        current = self.head
+        for _ in range(idx - 1):
+            current = current.next
+
+        current.next = current.next.next
+        if idx == self._size - 1:
+            self.tail = current
+
+        self._size -= 1
+
+    def __iter__(self):
+        cur = self.head
+        while cur:
+            yield cur.value
+            cur = cur.next
+
+    def __len__(self):
+        return self._size
+
+    def __repr__(self):
+        return f"SinglyLinkedList({list(self)})"
+```
+![Картинка 1](images/lab10/image.png)
